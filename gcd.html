@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>最大公约数</title>
+  <style>
+    :root {
+      --paper: #f6f3ec;
+      --ink: #1c1915;
+      --muted: #6f675e;
+      --line: #ddd6c8;
+      --green: #0d6b50;
+      --green-dark: #0a5340;
+      --sheet: #fffdf8;
+      --warn: #8d3424;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(760px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 3rem 0 4rem;
+    }
+
+    .kicker {
+      margin: 0 0 0.35rem;
+      color: var(--green);
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .lead {
+      margin: 0.75rem 0 0;
+      max-width: 38rem;
+      color: var(--muted);
+    }
+
+    form {
+      margin-top: 2rem;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: var(--sheet);
+      color: var(--ink);
+      font-family: Consolas, "Cascadia Mono", "Sarasa Mono SC", monospace;
+      font-size: 1.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input:focus {
+      outline: 2px solid var(--green);
+      border-color: transparent;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.primary {
+      height: 2.85rem;
+      padding: 0 1.25rem;
+      border: 0;
+      border-radius: 2px;
+      background: var(--green);
+      color: #f7f4ee;
+    }
+
+    button.primary:hover { background: var(--green-dark); }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.9rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .examples button {
+      padding: 0.2rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--sheet);
+      color: var(--ink);
+    }
+
+    .examples button:hover {
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+
+    .message {
+      min-height: 1.5rem;
+      margin: 0.85rem 0 0;
+      color: var(--warn);
+    }
+
+    .sheet {
+      margin-top: 1.5rem;
+      padding: 0.25rem 1.25rem 1.25rem;
+      background: var(--sheet);
+      border: 1px solid var(--line);
+    }
+
+    .sheet[hidden] { display: none; }
+
+    .trace-title {
+      margin: 1rem 0 0.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .head,
+    .step {
+      display: grid;
+      grid-template-columns: 2.75rem repeat(4, minmax(0, 1fr));
+      gap: 0.5rem 0.75rem;
+      align-items: end;
+    }
+
+    .head {
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--ink);
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .step {
+      padding: 0.8rem 0 0.65rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .step .idx,
+    .step .value {
+      font-family: Consolas, "Cascadia Mono", "Sarasa Mono SC", monospace;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .step .value { font-size: 1.15rem; }
+
+    .step .cell { min-width: 0; }
+
+    .step .name {
+      display: none;
+    }
+
+    .eq {
+      grid-column: 2 / -1;
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 0.92rem;
+      overflow-wrap: anywhere;
+    }
+
+    .step.done .rem { color: var(--green); }
+
+    .answer {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .answer span { color: var(--muted); }
+
+    .answer strong {
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 2.4rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--green);
+      overflow-wrap: anywhere;
+      text-align: right;
+    }
+
+    .note {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 680px) {
+      main { padding-top: 1.75rem; }
+
+      .fields { grid-template-columns: 1fr 1fr; }
+
+      button.primary { grid-column: 1 / -1; height: 2.7rem; }
+
+      .head { display: none; }
+
+      .step {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem 1rem;
+      }
+
+      .step .idx { display: none; }
+
+      .step .name {
+        display: block;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      .eq { grid-column: 1 / -1; }
+
+      .answer { align-items: flex-start; flex-direction: column; gap: 0.15rem; }
+
+      .answer strong { text-align: left; font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">欧几里得算法</p>
+    <h1>最大公约数</h1>
+    <p class="lead">用辗转相除计算两个整数的最大公约数，并打印每一步的被除数、除数、商和余数。</p>
+
+    <form id="form">
+      <div class="fields">
+        <label>
+          整数 a
+          <input id="input-a" name="a" inputmode="numeric" autocomplete="off" placeholder="48" required>
+        </label>
+        <label>
+          整数 b
+          <input id="input-b" name="b" inputmode="numeric" autocomplete="off" placeholder="18" required>
+        </label>
+        <button class="primary" type="submit">计算</button>
+      </div>
+      <ul class="examples">
+        <li><button type="button" data-a="48" data-b="18">48 和 18</button></li>
+        <li><button type="button" data-a="1071" data-b="462">1071 和 462</button></li>
+        <li><button type="button" data-a="-24" data-b="18">−24 和 18</button></li>
+        <li><button type="button" data-a="17" data-b="0">17 和 0</button></li>
+      </ul>
+      <p id="message" class="message" role="alert"></p>
+    </form>
+
+    <section id="sheet" class="sheet" hidden>
+      <p id="trace-title" class="trace-title"></p>
+      <div class="head" aria-hidden="true">
+        <span>步</span>
+        <span>被除数</span>
+        <span>除数</span>
+        <span>商</span>
+        <span>余数</span>
+      </div>
+      <div id="steps"></div>
+      <p id="note" class="note" hidden></p>
+      <div class="answer">
+        <span>最大公约数</span>
+        <strong id="result"></strong>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#form");
+    const inputA = document.querySelector("#input-a");
+    const inputB = document.querySelector("#input-b");
+    const message = document.querySelector("#message");
+    const sheet = document.querySelector("#sheet");
+    const traceTitle = document.querySelector("#trace-title");
+    const stepsEl = document.querySelector("#steps");
+    const noteEl = document.querySelector("#note");
+    const resultEl = document.querySelector("#result");
+
+    function parseInteger(text) {
+      const trimmed = text.trim();
+      if (!/^[+-]?\d+$/.test(trimmed)) return null;
+      return BigInt(trimmed);
+    }
+
+    function gcdSteps(a, b) {
+      let dividend = a < 0n ? -a : a;
+      let divisor = b < 0n ? -b : b;
+      const steps = [];
+
+      while (divisor !== 0n) {
+        const quotient = dividend / divisor;
+        const remainder = dividend % divisor;
+        steps.push({ dividend, divisor, quotient, remainder });
+        dividend = divisor;
+        divisor = remainder;
+      }
+
+      return { gcd: dividend, steps };
+    }
+
+    function cell(name, value) {
+      const wrap = document.createElement("div");
+      wrap.className = "cell" + (name === "余数" ? " rem" : "");
+      const label = document.createElement("span");
+      label.className = "name";
+      label.textContent = name;
+      const number = document.createElement("span");
+      number.className = "value";
+      number.textContent = value.toString();
+      wrap.append(label, number);
+      return wrap;
+    }
+
+    function render(rawA, rawB, outcome) {
+      message.textContent = "";
+      stepsEl.replaceChildren();
+      traceTitle.textContent = `gcd(${rawA}, ${rawB})`;
+
+      outcome.steps.forEach((step, index) => {
+        const row = document.createElement("div");
+        row.className = "step" + (step.remainder === 0n ? " done" : "");
+
+        const indexEl = document.createElement("span");
+        indexEl.className = "idx";
+        indexEl.textContent = String(index + 1);
+
+        const equation = document.createElement("p");
+        equation.className = "eq";
+        equation.textContent =
+          `${step.dividend} = ${step.quotient} × ${step.divisor} + ${step.remainder}`;
+
+        row.append(
+          indexEl,
+          cell("被除数", step.dividend),
+          cell("除数", step.divisor),
+          cell("商", step.quotient),
+          cell("余数", step.remainder),
+          equation
+        );
+        stepsEl.append(row);
+      });
+
+      const notes = [];
+      if (rawA < 0n || rawB < 0n) {
+        const absA = rawA < 0n ? -rawA : rawA;
+        const absB = rawB < 0n ? -rawB : rawB;
+        notes.push(`负数已取绝对值，按 gcd(${absA}, ${absB}) 计算。`);
+      }
+      if (outcome.steps.length === 0) {
+        notes.push(rawA === 0n && rawB === 0n
+          ? "0 和 0 没有除法步骤。按辗转相除，结果为 0。"
+          : "有一个数是 0，不做除法，最大公约数是另一个数的绝对值。");
+      }
+      noteEl.hidden = notes.length === 0;
+      noteEl.textContent = notes.join("");
+
+      resultEl.textContent = outcome.gcd.toString();
+      sheet.hidden = false;
+    }
+
+    function calculate() {
+      const a = parseInteger(inputA.value);
+      const b = parseInteger(inputB.value);
+      if (a === null || b === null) {
+        sheet.hidden = true;
+        message.textContent = "请输入两个整数";
+        return;
+      }
+
+      render(a, b, gcdSteps(a, b));
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      calculate();
+    });
+
+    document.querySelector(".examples").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      inputA.value = button.dataset.a;
+      inputB.value = button.dataset.b;
+      calculate();
+    });
+
+    inputA.focus();
+  </script>
+</body>
+</html>
